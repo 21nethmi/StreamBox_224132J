@@ -3,7 +3,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store";
+import { useThemeColors } from "../hooks/useThemeColors";
+import { AppDispatch, RootState } from "../redux/store";
 import { addFavourite, removeFavourite } from "../store/slices/favouritesSlice";
 
 interface MovieCardProps {
@@ -24,6 +25,7 @@ export default function MovieCard({
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { favourites } = useSelector((state: RootState) => state.favourites);
+  const colors = useThemeColors();
 
   const isFavourite = favourites.some((fav) => fav.id === id);
 
@@ -53,7 +55,7 @@ export default function MovieCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.cardBackground }]}
       onPress={() => router.push(`/details/${id}`)}
       activeOpacity={0.8}
     >
@@ -85,10 +87,16 @@ export default function MovieCard({
 
       <View style={styles.overlay}>
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text
+            style={[styles.title, { color: colors.text }]}
+            numberOfLines={1}
+          >
             {title || "Untitled"}
           </Text>
-          <Text style={styles.description} numberOfLines={2}>
+          <Text
+            style={[styles.description, { color: colors.textSecondary }]}
+            numberOfLines={2}
+          >
             {truncateText(description || "No description available")}
           </Text>
           <View style={styles.footer}>
@@ -112,7 +120,6 @@ export default function MovieCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     marginBottom: 16,
     overflow: "hidden",
@@ -152,11 +159,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1a1a1a",
   },
   description: {
     fontSize: 14,
-    color: "#555",
     lineHeight: 20,
   },
   footer: {

@@ -10,9 +10,12 @@ import {
   View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
+import { useSelector } from "react-redux";
 import MovieCard from "../../components/MovieCard";
 import SearchBar from "../../components/SearchBar";
 import { useFetchMovies } from "../../hooks/useFetchMovies";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { RootState } from "../../redux/store";
 import { Movie } from "../../store/slices/contentSlice";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -37,6 +40,29 @@ export default function Home() {
   const [displayedTab, setDisplayedTab] = useState(0);
   const pagerRef = useRef<PagerView>(null);
 
+  // Get theme colors
+  const colors = useThemeColors();
+
+  // Get user data from Redux
+  const user = useSelector((state: RootState) => state.auth.user);
+  const profile = useSelector((state: RootState) => state.profile.profile);
+
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  // Get user's first name or username
+  const getUserName = () => {
+    if (profile?.firstName) return profile.firstName;
+    if (user?.firstName) return user.firstName;
+    if (user?.username) return user.username;
+    return "Guest";
+  };
+
   const handleClearSearch = () => {
     setSearchQuery("");
   };
@@ -59,11 +85,18 @@ export default function Home() {
 
   return (
     <LinearGradient
-      colors={["#667eea", "#764ba2", "#f093fb"]}
+      colors={
+        colors.background === "#121212"
+          ? ["#1a1a2e", "#16213e", "#0f3460"]
+          : ["#667eea", "#764ba2", "#f093fb"]
+      }
       style={styles.container}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>StreamBox</Text>
+        <Text style={[styles.title, { color: colors.text }]}>StreamBox</Text>
+        <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>
+          {getGreeting()}, {getUserName()}! 👋
+        </Text>
         <View style={styles.tabsContainer}>
           {tabs.map((tab, index) => (
             <TouchableOpacity
@@ -75,7 +108,11 @@ export default function Home() {
               <Text
                 style={[
                   styles.tabText,
-                  activeTab === index && styles.tabTextActive,
+                  { color: colors.textTertiary },
+                  activeTab === index && [
+                    styles.tabTextActive,
+                    { color: colors.text },
+                  ],
                 ]}
               >
                 {tab.label}
@@ -123,21 +160,24 @@ interface TabContentProps {
 }
 
 function TabContent({ contentType, searchQuery, isActive }: TabContentProps) {
+  const colors = useThemeColors();
+
+  // Always call hooks first (Rules of Hooks)
+  const { movies, loading, error } = useFetchMovies(
+    isActive ? searchQuery : "",
+    isActive ? contentType : "all"
+  );
+
   // For podcasts and songs, show coming soon message immediately without fetching
   if (isActive && (contentType === "podcasts" || contentType === "songs")) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
           {contentType === "podcasts" ? "Podcasts" : "Songs"} coming soon!
         </Text>
       </View>
     );
   }
-
-  const { movies, loading, error } = useFetchMovies(
-    isActive ? searchQuery : "",
-    isActive ? contentType : "all"
-  );
 
   if (!isActive) {
     return null;
@@ -146,8 +186,10 @@ function TabContent({ contentType, searchQuery, isActive }: TabContentProps) {
   if (loading && movies.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Loading content...</Text>
+        <ActivityIndicator size="large" color={colors.buttonPrimary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>
+          Loading content...
+        </Text>
       </View>
     );
   }
@@ -155,7 +197,9 @@ function TabContent({ contentType, searchQuery, isActive }: TabContentProps) {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error: {String(error)}</Text>
+        <Text style={[styles.errorText, { color: colors.error }]}>
+          Error: {String(error)}
+        </Text>
       </View>
     );
   }
@@ -172,7 +216,9 @@ function TabContent({ contentType, searchQuery, isActive }: TabContentProps) {
 
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{emptyMessage}</Text>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          {emptyMessage}
+        </Text>
       </View>
     );
   }
@@ -217,8 +263,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "800",
-    color: "#fff",
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
     marginBottom: 16,
+    fontWeight: "500",
   },
   tabsContainer: {
     flexDirection: "row",
@@ -232,12 +282,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
     fontWeight: "600",
     textAlign: "center",
   },
   tabTextActive: {
-    color: "#fff",
     fontSize: 13,
   },
   activeIndicator: {
@@ -269,7 +317,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: "#fff",
     fontWeight: "600",
   },
   errorContainer: {
@@ -280,7 +327,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: "#fff",
     textAlign: "center",
     fontWeight: "600",
   },
@@ -292,7 +338,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center",
     fontWeight: "500",
   },

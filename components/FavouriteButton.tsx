@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store";
+import { AppDispatch, RootState } from "../redux/store";
 import { Movie } from "../store/slices/contentSlice";
 import { addFavourite, removeFavourite } from "../store/slices/favouritesSlice";
 

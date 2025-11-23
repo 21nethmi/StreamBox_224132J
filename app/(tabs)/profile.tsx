@@ -8,12 +8,13 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../store";
+import { AppDispatch, RootState } from "../../redux/store";
 import { logout } from "../../store/slices/authSlice";
 import { clearFavourites } from "../../store/slices/favouritesSlice";
 import {
@@ -22,13 +23,17 @@ import {
   loadProfileFromStorage,
   selectProfile,
 } from "../../store/slices/profileSlice";
+import { saveThemeToStorage, toggleTheme } from "../../store/slices/themeSlice";
 
 export default function Profile() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const profile = useSelector((state: RootState) => selectProfile(state));
   const user = useSelector((state: RootState) => state.auth.user);
+  const theme = useSelector((state: RootState) => state.theme.theme);
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+
+  const isDarkMode = theme === "dark";
 
   useEffect(() => {
     // Load profile data on mount
@@ -65,6 +70,12 @@ export default function Profile() {
     router.push("/(tabs)/favourites");
   };
 
+  const handleThemeToggle = () => {
+    dispatch(toggleTheme());
+    const newTheme = isDarkMode ? "light" : "dark";
+    dispatch(saveThemeToStorage(newTheme));
+  };
+
   const getInitials = () => {
     if (profile?.firstName && profile?.lastName) {
       return `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase();
@@ -86,7 +97,11 @@ export default function Profile() {
 
   return (
     <LinearGradient
-      colors={["#667eea", "#764ba2", "#f093fb"]}
+      colors={
+        isDarkMode
+          ? ["#1a1a2e", "#16213e", "#0f3460"]
+          : ["#667eea", "#764ba2", "#f093fb"]
+      }
       style={styles.container}
     >
       <ScrollView
@@ -156,6 +171,24 @@ export default function Profile() {
               color="rgba(255, 255, 255, 0.6)"
             />
           </TouchableOpacity>
+
+          {/* Dark Mode Toggle */}
+          <View style={styles.option}>
+            <View style={styles.optionLeft}>
+              <Feather name="moon" size={22} color="#fff" />
+              <Text style={styles.optionText}>Dark Mode</Text>
+            </View>
+            <Switch
+              value={isDarkMode}
+              onValueChange={handleThemeToggle}
+              trackColor={{
+                false: "rgba(255, 255, 255, 0.3)",
+                true: "#667eea",
+              }}
+              thumbColor={isDarkMode ? "#fff" : "#f4f3f4"}
+              ios_backgroundColor="rgba(255, 255, 255, 0.3)"
+            />
+          </View>
 
           <TouchableOpacity
             style={[styles.option, styles.logoutOption]}

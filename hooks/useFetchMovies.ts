@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { buildImageUrl, buildTMDBUrl, TMDB_IMAGE_SIZES } from '../constants/api';
-import { AppDispatch, RootState } from '../store';
+import { AppDispatch, RootState } from '../redux/store';
 import { fetchMoviesFailure, fetchMoviesStart, fetchMoviesSuccess } from '../store/slices/contentSlice';
 
 type ContentType = 'all' | 'movies' | 'shows' | 'podcasts' | 'songs';

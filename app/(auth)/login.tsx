@@ -1,6 +1,5 @@
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { RootState } from "@/store";
 import { loginUser } from "@/store/slices/authSlice";
 import { loadFavouritesFromStorage } from "@/store/slices/favouritesSlice";
 import { fetchUserProfile } from "@/store/slices/profileSlice";
@@ -20,6 +19,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
+import { RootState } from "../../redux/store";
 
 type FormData = {
   username: string;

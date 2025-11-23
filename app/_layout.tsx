@@ -10,13 +10,14 @@ import "react-native-reanimated";
 import { Provider, useDispatch } from "react-redux";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import store from "@/store";
 import { loadFavouritesFromStorage } from "@/store/slices/favouritesSlice";
 import {
   fetchUserProfile,
   loadProfileFromStorage,
 } from "@/store/slices/profileSlice";
+import { loadThemeFromStorage } from "@/store/slices/themeSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import store from "../redux/store";
 
 export const unstable_settings = {
   // Anchor the initial mount to the auth group so auth routes render first
@@ -28,6 +29,9 @@ function AppContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    // Load theme from AsyncStorage
+    dispatch(loadThemeFromStorage() as any);
+
     // Load profile and favourites from AsyncStorage on app start
     dispatch(loadProfileFromStorage() as any);
 

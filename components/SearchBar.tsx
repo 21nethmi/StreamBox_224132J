@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { useThemeColors } from "../hooks/useThemeColors";
 
 interface SearchBarProps {
   value: string;
@@ -15,22 +16,34 @@ export default function SearchBar({
   placeholder = "Search movies, shows...",
   onClear,
 }: SearchBarProps) {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
-      <Feather name="search" size={20} color="#999" style={styles.searchIcon} />
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.inputBackground, borderColor: colors.border },
+      ]}
+    >
+      <Feather
+        name="search"
+        size={20}
+        color={colors.textTertiary}
+        style={styles.searchIcon}
+      />
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: colors.inputText }]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#999"
+        placeholderTextColor={colors.inputPlaceholder}
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={onClear} style={styles.clearButton}>
-          <Feather name="x-circle" size={18} color="#999" />
+          <Feather name="x-circle" size={18} color={colors.textTertiary} />
         </TouchableOpacity>
       )}
     </View>
@@ -41,8 +54,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
     borderRadius: 12,
+    borderWidth: 1,
     paddingHorizontal: 12,
     height: 48,
     shadowColor: "#000",
@@ -57,7 +70,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#1a1a1a",
     paddingVertical: 0,
   },
   clearButton: {

@@ -18,6 +18,7 @@ import {
   buildTMDBUrl,
   TMDB_IMAGE_SIZES,
 } from "../../constants/api";
+import { useThemeColors } from "../../hooks/useThemeColors";
 import { Movie } from "../../store/slices/contentSlice";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -37,6 +38,7 @@ export default function Details() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { id } = params;
+  const colors = useThemeColors();
 
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,20 +111,28 @@ export default function Details() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Loading details...</Text>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
+        <ActivityIndicator size="large" color={colors.buttonPrimary} />
+        <Text style={[styles.loadingText, { color: colors.text }]}>
+          Loading details...
+        </Text>
       </View>
     );
   }
 
   if (error || !movie) {
     return (
-      <View style={styles.centerContainer}>
-        <Feather name="alert-circle" size={48} color="#ff4757" />
-        <Text style={styles.errorText}>{error || "Movie not found"}</Text>
+      <View
+        style={[styles.centerContainer, { backgroundColor: colors.background }]}
+      >
+        <Feather name="alert-circle" size={48} color={colors.error} />
+        <Text style={[styles.errorText, { color: colors.text }]}>
+          {error || "Movie not found"}
+        </Text>
         <TouchableOpacity
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: colors.buttonPrimary }]}
           onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
@@ -136,7 +146,7 @@ export default function Details() {
     movie.popularity && movie.popularity > 100 ? "Popular" : "Trending";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -150,27 +160,40 @@ export default function Details() {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.coverImage, styles.placeholderCover]}>
-              <Feather name="film" size={80} color="#ccc" />
+            <View
+              style={[
+                styles.coverImage,
+                styles.placeholderCover,
+                { backgroundColor: colors.backgroundSecondary },
+              ]}
+            >
+              <Feather name="film" size={80} color={colors.textTertiary} />
             </View>
           )}
 
           <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.7)",
-              "rgba(255,255,255,0.95)",
-            ]}
+            colors={
+              colors.background === "#121212"
+                ? ["transparent", "rgba(18,18,18,0.7)", "rgba(18,18,18,0.95)"]
+                : [
+                    "transparent",
+                    "rgba(255,255,255,0.7)",
+                    "rgba(255,255,255,0.95)",
+                  ]
+            }
             style={styles.gradient}
           />
 
           {/* Back Button */}
           <TouchableOpacity
-            style={styles.headerBackButton}
+            style={[
+              styles.headerBackButton,
+              { backgroundColor: colors.cardBackground },
+            ]}
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
-            <Feather name="arrow-left" size={24} color="#1a1a1a" />
+            <Feather name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
 
           {/* Favourite Button */}
@@ -180,14 +203,23 @@ export default function Details() {
         </View>
 
         {/* Content */}
-        <View style={styles.content}>
+        <View style={[styles.content, { backgroundColor: colors.background }]}>
           {/* Title */}
-          <Text style={styles.title}>{movie.title}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {movie.title}
+          </Text>
 
           {/* Status Badge */}
-          <View style={styles.statusBadge}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: colors.backgroundSecondary },
+            ]}
+          >
             <Feather name="trending-up" size={16} color="#4ade80" />
-            <Text style={styles.statusText}>{statusText}</Text>
+            <Text style={[styles.statusText, { color: colors.text }]}>
+              {statusText}
+            </Text>
           </View>
 
           {/* Metadata */}
@@ -195,7 +227,9 @@ export default function Details() {
             {movie.rating && movie.rating > 0 && (
               <View style={styles.metadataItem}>
                 <Feather name="star" size={16} color="#FFD700" />
-                <Text style={styles.metadataText}>
+                <Text
+                  style={[styles.metadataText, { color: colors.textSecondary }]}
+                >
                   {movie.rating.toFixed(1)}/10
                 </Text>
               </View>
@@ -203,7 +237,9 @@ export default function Details() {
             {movie.releaseDate && (
               <View style={styles.metadataItem}>
                 <Feather name="calendar" size={16} color="#667eea" />
-                <Text style={styles.metadataText}>
+                <Text
+                  style={[styles.metadataText, { color: colors.textSecondary }]}
+                >
                   {new Date(movie.releaseDate).getFullYear()}
                 </Text>
               </View>
@@ -211,7 +247,11 @@ export default function Details() {
             {movie.runtime && (
               <View style={styles.metadataItem}>
                 <Feather name="clock" size={16} color="#667eea" />
-                <Text style={styles.metadataText}>{movie.runtime} min</Text>
+                <Text
+                  style={[styles.metadataText, { color: colors.textSecondary }]}
+                >
+                  {movie.runtime} min
+                </Text>
               </View>
             )}
           </View>
@@ -220,8 +260,19 @@ export default function Details() {
           {movie.genres && movie.genres.length > 0 && (
             <View style={styles.genresContainer}>
               {movie.genres.map((genre) => (
-                <View key={genre.id} style={styles.genreChip}>
-                  <Text style={styles.genreText}>{genre.name}</Text>
+                <View
+                  key={genre.id}
+                  style={[
+                    styles.genreChip,
+                    {
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.genreText, { color: colors.text }]}>
+                    {genre.name}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -229,27 +280,39 @@ export default function Details() {
 
           {/* Tagline */}
           {movie.tagline && (
-            <Text style={styles.tagline}>"{movie.tagline}"</Text>
+            <Text style={[styles.tagline, { color: colors.textSecondary }]}>
+              "{movie.tagline}"
+            </Text>
           )}
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Overview</Text>
-            <Text style={styles.description}>{movie.description}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Overview
+            </Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
+              {movie.description}
+            </Text>
           </View>
 
           {/* Additional Info */}
           {movie.status && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Status</Text>
-              <Text style={styles.infoText}>{movie.status}</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Status
+              </Text>
+              <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                {movie.status}
+              </Text>
             </View>
           )}
 
           {movie.voteCount && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>User Reviews</Text>
-              <Text style={styles.infoText}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                User Reviews
+              </Text>
+              <Text style={[styles.infoText, { color: colors.textSecondary }]}>
                 {movie.voteCount.toLocaleString()} votes
               </Text>
             </View>
@@ -295,25 +358,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
   },
   errorText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#ff4757",
     textAlign: "center",
   },
   backButton: {
     marginTop: 24,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    backgroundColor: "#667eea",
     borderRadius: 8,
   },
   backButtonText: {
@@ -348,7 +407,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -365,7 +423,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingTop: 20,
-    backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     marginTop: -24,
@@ -373,14 +430,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "800",
-    color: "#1a1a1a",
     marginBottom: 12,
   },
   statusBadge: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: "rgba(74, 222, 128, 0.1)",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
@@ -388,7 +443,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   statusText: {
-    color: "#4ade80",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -404,7 +458,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metadataText: {
-    color: "#666",
     fontSize: 14,
   },
   genresContainer: {
@@ -414,22 +467,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   genreChip: {
-    backgroundColor: "rgba(102, 126, 234, 0.2)",
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(102, 126, 234, 0.3)",
   },
   genreText: {
-    color: "#667eea",
     fontSize: 13,
     fontWeight: "500",
   },
   tagline: {
     fontSize: 16,
     fontStyle: "italic",
-    color: "#666",
     marginBottom: 20,
   },
   section: {
@@ -438,17 +487,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1a1a1a",
     marginBottom: 8,
   },
   description: {
     fontSize: 15,
     lineHeight: 24,
-    color: "#444",
   },
   infoText: {
     fontSize: 15,
-    color: "#444",
   },
   actionContainer: {
     marginBottom: 16,

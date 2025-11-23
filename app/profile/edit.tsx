@@ -16,8 +16,9 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { AppDispatch, RootState } from "../../redux/store";
 import { Profile } from "../../services/storage";
-import { AppDispatch, RootState } from "../../store";
 import {
   selectProfile,
   selectProfileLoading,
@@ -63,6 +64,9 @@ export default function EditProfile() {
   const loading = useSelector((state: RootState) =>
     selectProfileLoading(state)
   );
+  const colors = useThemeColors();
+  const theme = useSelector((state: RootState) => state.theme.theme);
+  const isDarkMode = theme === "dark";
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const {
@@ -115,7 +119,11 @@ export default function EditProfile() {
 
   return (
     <LinearGradient
-      colors={["#667eea", "#764ba2", "#f093fb"]}
+      colors={
+        isDarkMode
+          ? ["#1a1a2e", "#16213e", "#0f3460"]
+          : ["#667eea", "#764ba2", "#f093fb"]
+      }
       style={styles.container}
     >
       {/* Header */}
@@ -139,12 +147,16 @@ export default function EditProfile() {
             name="firstName"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.firstName && styles.inputError]}
+                style={[
+                  styles.input,
+                  errors.firstName && styles.inputError,
+                  { color: colors.text },
+                ]}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 placeholder="Enter your first name"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholderTextColor={colors.inputPlaceholder}
               />
             )}
           />
@@ -161,12 +173,16 @@ export default function EditProfile() {
             name="lastName"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.lastName && styles.inputError]}
+                style={[
+                  styles.input,
+                  errors.lastName && styles.inputError,
+                  { color: colors.text },
+                ]}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 placeholder="Enter your last name"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholderTextColor={colors.inputPlaceholder}
               />
             )}
           />
@@ -183,12 +199,16 @@ export default function EditProfile() {
             name="email"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
+                style={[
+                  styles.input,
+                  errors.email && styles.inputError,
+                  { color: colors.text },
+                ]}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 placeholder="Enter your email"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholderTextColor={colors.inputPlaceholder}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -207,12 +227,16 @@ export default function EditProfile() {
             name="username"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.username && styles.inputError]}
+                style={[
+                  styles.input,
+                  errors.username && styles.inputError,
+                  { color: colors.text },
+                ]}
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
                 placeholder="Enter your username"
-                placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                placeholderTextColor={colors.inputPlaceholder}
                 autoCapitalize="none"
               />
             )}
