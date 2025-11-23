@@ -41,15 +41,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 48,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   searchIcon: {
     marginRight: 8,
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#333",
+    color: "#1a1a1a",
     paddingVertical: 0,
   },
   clearButton: {

@@ -2,6 +2,9 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store";
+import { addFavourite, removeFavourite } from "../store/slices/favouritesSlice";
 
 interface MovieCardProps {
   id: number;
@@ -19,11 +22,33 @@ export default function MovieCard({
   rating,
 }: MovieCardProps) {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { favourites } = useSelector((state: RootState) => state.favourites);
+
+  const isFavourite = favourites.some((fav) => fav.id === id);
 
   const truncateText = (text: string, maxLength: number = 80) => {
     if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
+  };
+
+  const handleFavouritePress = (e: any) => {
+    e.stopPropagation(); // Prevent card navigation when tapping heart
+
+    const movie = {
+      id,
+      title,
+      description,
+      thumbnail,
+      rating,
+    };
+
+    if (isFavourite) {
+      dispatch(removeFavourite(id));
+    } else {
+      dispatch(addFavourite(movie));
+    }
   };
 
   return (
@@ -43,6 +68,21 @@ export default function MovieCard({
           <Feather name="film" size={40} color="#ccc" />
         </View>
       )}
+
+      {/* Favourite Button */}
+      <TouchableOpacity
+        style={styles.favouriteButton}
+        onPress={handleFavouritePress}
+        activeOpacity={0.7}
+      >
+        <Feather
+          name="heart"
+          size={20}
+          color={isFavourite ? "#ff4757" : "#fff"}
+          fill={isFavourite ? "#ff4757" : "transparent"}
+        />
+      </TouchableOpacity>
+
       <View style={styles.overlay}>
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={1}>
@@ -85,11 +125,23 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 180,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#e8e8e8",
   },
   placeholderImage: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  favouriteButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
   },
   overlay: {
     padding: 16,
@@ -100,11 +152,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
+    color: "#1a1a1a",
   },
   description: {
     fontSize: 14,
-    color: "#666",
+    color: "#555",
     lineHeight: 20,
   },
   footer: {
@@ -121,7 +173,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: "#1a1a1a",
   },
   playButton: {
     width: 36,
