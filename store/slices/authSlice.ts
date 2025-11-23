@@ -1,7 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-type User = { username: string } | null;
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
+} | null;
 
 interface AuthState {
   user: User;
@@ -62,12 +70,29 @@ export const loginUser = createAsyncThunk(
 
       const data = JSON.parse(text);
 
-      // store token and username locally for now
+      // store token and user data locally
       await AsyncStorage.setItem('token', data.accessToken || data.token);
-      await AsyncStorage.setItem('username', data.username || credentials.username);
-      console.log('[Auth] Login successful, token saved');
+      await AsyncStorage.setItem('user', JSON.stringify({
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        image: data.image,
+      }));
+      console.log('[Auth] Login successful, token and user data saved');
 
-      return { username: data.username || credentials.username, token: data.accessToken || data.token };
+      return {
+        id: data.id,
+        username: data.username,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        gender: data.gender,
+        image: data.image,
+        token: data.accessToken || data.token,
+      };
     } catch (err: any) {
       return rejectWithValue(err.message || 'Network error');
     }
@@ -82,9 +107,17 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess(state, action: PayloadAction<{ username: string; token: string }>) {
+    loginSuccess(state, action: PayloadAction<{ id: number; username: string; email: string; firstName: string; lastName: string; gender: string; image: string; token: string }>) {
       state.loading = false;
-      state.user = { username: action.payload.username };
+      state.user = {
+        id: action.payload.id,
+        username: action.payload.username,
+        email: action.payload.email,
+        firstName: action.payload.firstName,
+        lastName: action.payload.lastName,
+        gender: action.payload.gender,
+        image: action.payload.image,
+      };
       state.token = action.payload.token;
       state.isAuthenticated = true;
       state.error = null;
@@ -101,7 +134,7 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
       AsyncStorage.removeItem('token');
-      AsyncStorage.removeItem('username');
+      AsyncStorage.removeItem('user');
     },
   },
   extraReducers: (builder) => {
@@ -112,10 +145,19 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = { username: action.payload.username } as User;
+        state.user = {
+          id: action.payload.id,
+          username: action.payload.username,
+          email: action.payload.email,
+          firstName: action.payload.firstName,
+          lastName: action.payload.lastName,
+          gender: action.payload.gender,
+          image: action.payload.image,
+        };
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
+        // Note: Favourites will be loaded by the app after login via userId
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;

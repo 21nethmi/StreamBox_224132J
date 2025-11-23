@@ -2,39 +2,52 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Movie } from './contentSlice';
 
-const FAVOURITES_STORAGE_KEY = '@streambox_favourites';
+const FAVOURITES_STORAGE_PREFIX = '@streambox_favourites_';
+
+// Get storage key for specific user
+const getFavouritesStorageKey = (userId: string | number) => {
+  return `${FAVOURITES_STORAGE_PREFIX}${userId}`;
+};
 
 interface FavouritesState {
   favourites: Movie[];
   loading: boolean;
+  userId: string | number | null;
 }
 
 const initialState: FavouritesState = {
   favourites: [],
   loading: false,
+  userId: null,
 };
 
-// Async thunk to load favourites from AsyncStorage
+// Async thunk to load favourites from AsyncStorage for specific user
 export const loadFavouritesFromStorage = createAsyncThunk(
   'favourites/loadFromStorage',
-  async () => {
+  async (userId: string | number) => {
     try {
-      const storedFavourites = await AsyncStorage.getItem(FAVOURITES_STORAGE_KEY);
+      const storageKey = getFavouritesStorageKey(userId);
+      const storedFavourites = await AsyncStorage.getItem(storageKey);
       if (storedFavourites) {
-        return JSON.parse(storedFavourites) as Movie[];
+        return { favourites: JSON.parse(storedFavourites) as Movie[], userId };
       }
-      return [];
+      return { favourites: [], userId };
     } catch (error) {
       console.error('Error loading favourites from storage:', error);
-      return [];
+      return { favourites: [], userId };
     }
   }
 );
 
-// Helper function to save favourites to AsyncStorage
-const saveFavouritesToStorage = async (favourites: Movie[]) => {
+// Helper function to save favourites to AsyncStorage for specific user
+const saveFavouritesToStorage = async (favourites: Movie[], userId: string | number | null) => {
   try {
-    await AsyncStorage.setItem(FAVOURITES_STORAGE_KEY, JSON.stringify(favourites));
+    if (!userId) {
+      console.warn('No userId provided, favourites not saved');
+      return;
+    }
+    const storageKey = getFavouritesStorageKey(userId);
+    await AsyncStorage.setItem(storageKey, JSON.stringify(favourites));
   } catch (error) {
     console.error('Error saving favourites to storage:', error);
   }
@@ -48,12 +61,12 @@ const favouritesSlice = createSlice({
       const exists = state.favourites.find(fav => fav.id === action.payload.id);
       if (!exists) {
         state.favourites.push(action.payload);
-        saveFavouritesToStorage(state.favourites);
+        saveFavouritesToStorage(state.favourites, state.userId);
       }
     },
     removeFavourite(state, action: PayloadAction<number>) {
       state.favourites = state.favourites.filter(fav => fav.id !== action.payload);
-      saveFavouritesToStorage(state.favourites);
+      saveFavouritesToStorage(state.favourites, state.userId);
     },
     toggleFavourite(state, action: PayloadAction<Movie>) {
       const exists = state.favourites.find(fav => fav.id === action.payload.id);
@@ -62,11 +75,12 @@ const favouritesSlice = createSlice({
       } else {
         state.favourites.push(action.payload);
       }
-      saveFavouritesToStorage(state.favourites);
+      saveFavouritesToStorage(state.favourites, state.userId);
     },
     clearFavourites(state) {
       state.favourites = [];
-      saveFavouritesToStorage([]);
+      state.userId = null;
+      // Note: We don't save empty array to storage on logout, each user keeps their favourites
     },
   },
   extraReducers: (builder) => {
@@ -75,7 +89,8 @@ const favouritesSlice = createSlice({
         state.loading = true;
       })
       .addCase(loadFavouritesFromStorage.fulfilled, (state, action) => {
-        state.favourites = action.payload;
+        state.favourites = action.payload.favourites;
+        state.userId = action.payload.userId;
         state.loading = false;
       })
       .addCase(loadFavouritesFromStorage.rejected, (state) => {

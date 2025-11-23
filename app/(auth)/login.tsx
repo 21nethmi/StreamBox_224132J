@@ -2,6 +2,8 @@ import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import { RootState } from "@/store";
 import { loginUser } from "@/store/slices/authSlice";
+import { loadFavouritesFromStorage } from "@/store/slices/favouritesSlice";
+import { fetchUserProfile } from "@/store/slices/profileSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -44,7 +46,11 @@ export default function Login() {
 
   const onSubmit = async (values: FormData) => {
     try {
-      await dispatch(loginUser(values)).unwrap();
+      const result = await dispatch(loginUser(values)).unwrap();
+      // Load user-specific favourites after successful login
+      dispatch(loadFavouritesFromStorage(result.id || result.username));
+      // Fetch user profile from API
+      dispatch(fetchUserProfile(result.token));
       router.replace("/(tabs)/home");
     } catch (err) {
       // error handled in slice; could show toast
