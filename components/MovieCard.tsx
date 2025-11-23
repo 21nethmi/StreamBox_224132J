@@ -103,7 +103,7 @@ export default function MovieCard({
             {rating && rating > 0 && (
               <View style={styles.rating}>
                 <Feather name="star" size={14} color="#FFD700" />
-                <Text style={styles.ratingText}>
+                <Text style={[styles.ratingText, { color: colors.text }]}>
                   {String(rating.toFixed(1))}/10
                 </Text>
               </View>
@@ -178,7 +178,6 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1a1a1a",
   },
   playButton: {
     width: 36,
