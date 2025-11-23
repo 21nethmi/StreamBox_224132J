@@ -55,6 +55,15 @@ const favouritesSlice = createSlice({
       state.favourites = state.favourites.filter(fav => fav.id !== action.payload);
       saveFavouritesToStorage(state.favourites);
     },
+    toggleFavourite(state, action: PayloadAction<Movie>) {
+      const exists = state.favourites.find(fav => fav.id === action.payload.id);
+      if (exists) {
+        state.favourites = state.favourites.filter(fav => fav.id !== action.payload.id);
+      } else {
+        state.favourites.push(action.payload);
+      }
+      saveFavouritesToStorage(state.favourites);
+    },
     clearFavourites(state) {
       state.favourites = [];
       saveFavouritesToStorage([]);
@@ -75,5 +84,11 @@ const favouritesSlice = createSlice({
   },
 });
 
-export const { addFavourite, removeFavourite, clearFavourites } = favouritesSlice.actions;
+// Selectors
+export const selectFavourites = (state: { favourites: FavouritesState }) => state.favourites.favourites;
+export const selectIsFavourite = (state: { favourites: FavouritesState }, id: number) => 
+  state.favourites.favourites.some(fav => fav.id === id);
+export const selectFavouritesLoading = (state: { favourites: FavouritesState }) => state.favourites.loading;
+
+export const { addFavourite, removeFavourite, toggleFavourite, clearFavourites } = favouritesSlice.actions;
 export default favouritesSlice.reducer;
